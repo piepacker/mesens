@@ -22,7 +22,7 @@ jobs:
       - name: ZIP Release
         uses: papeloto/action-zip@v1
         with:
-          files: mesens_libretro.so
+          files: Libretro/mesens_libretro.so
           dest: mesens_libretro.so.zip
 
       - name: Get release
@@ -50,12 +50,12 @@ jobs:
         with:
           submodules: true
 
-      - run: make -C libretro platform=unix-armv7-neon-hardfloat -j4
+      - run: make -C Libretro platform=unix-armv7-neon-hardfloat -j4
 
       - name: ZIP Release
         uses: papeloto/action-zip@v1
         with:
-          files: mesens_libretro.so
+          files: Libretro/mesens_libretro.so
           dest: mesens_libretro.so.zip
 
       - name: Get release
@@ -87,7 +87,7 @@ jobs:
       - name: ZIP Release
         uses: papeloto/action-zip@v1
         with:
-          files: mesens_libretro.dylib
+          files: Libretro/mesens_libretro.dylib
           dest: mesens_libretro.dylib.zip
 
       - name: Get release
@@ -119,7 +119,7 @@ jobs:
       - name: ZIP Release
         uses: papeloto/action-zip@v1
         with:
-          files: mesens_libretro.dll
+          files: Libretro/mesens_libretro.dll
           dest: mesens_libretro.dll.zip
 
       - name: Get release
