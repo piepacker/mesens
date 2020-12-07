@@ -1,0 +1,140 @@
+name: CD
+
+on:
+  release:
+    types: [created]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - run: make -C Libretro -j4
+
+      - name: ZIP Release
+        uses: papeloto/action-zip@v1
+        with:
+          files: mesens_libretro.so
+          dest: mesens_libretro.so.zip
+
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: mesens_libretro.so.zip
+          asset_name: mesens-Linux-x86_64.zip
+          asset_content_type: application/zip
+
+  build_linux_armv7_neon:
+    runs-on: ubuntu-latest
+    container: dockcross/linux-armv7
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - run: make -C libretro platform=unix-armv7-neon-hardfloat -j4
+
+      - name: ZIP Release
+        uses: papeloto/action-zip@v1
+        with:
+          files: mesens_libretro.so
+          dest: mesens_libretro.so.zip
+
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: mesens_libretro.so.zip
+          asset_name: mesens-Linux-arm.zip
+          asset_content_type: application/zip
+
+  build_osx:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - run: make -C Libretro -j4
+
+      - name: ZIP Release
+        uses: papeloto/action-zip@v1
+        with:
+          files: mesens_libretro.dylib
+          dest: mesens_libretro.dylib.zip
+
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: mesens_libretro.dylib.zip
+          asset_name: mesens-OSX-x86_64.zip
+          asset_content_type: application/zip
+
+  build_windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - run: CC=gcc make -C Libretro -j4
+
+      - name: ZIP Release
+        uses: papeloto/action-zip@v1
+        with:
+          files: mesens_libretro.dll
+          dest: mesens_libretro.dll.zip
+
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: mesens_libretro.dll.zip
+          asset_name: mesens-Windows-x86_64.zip
+          asset_content_type: application/zip
+
