@@ -9,7 +9,7 @@
   variables:
     JNI_PATH: Libretro
     MAKEFILE_PATH: Libretro
-    CORENAME: mesen
+    CORENAME: mesens
 
 # Inclusion templates, required for the build to work
 include:
