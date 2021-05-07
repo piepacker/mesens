@@ -32,6 +32,9 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
 ifeq ($(shell uname -p),powerpc)
   arch = ppc
 endif
+ifeq ($(shell uname -p),arm)
+  arch = arm
+endif
 else ifneq ($(findstring MINGW,$(shell uname -a)),)
   system_platform = win
 endif
@@ -45,17 +48,12 @@ TARGET_NAME := mesen-s
 LIBM        = -lm
 
 ifeq ($(ARCHFLAGS),)
-ifeq ($(archs),ppc)
+ifeq ($(arch),ppc)
    ARCHFLAGS = -arch ppc -arch ppc64
+else ifeq ($(arch),arm)
+   ARCHFLAGS = -arch arm64
 else
    ARCHFLAGS = -arch i386 -arch x86_64
-endif
-endif
-
-ifeq ($(platform), osx)
-ifndef ($(NOUNIVERSAL))
-   CXXFLAGS += $(ARCHFLAGS)
-   LFLAGS += $(ARCHFLAGS)
 endif
 endif
 
@@ -115,6 +113,23 @@ else ifneq (,$(findstring osx,$(platform)))
    TARGET := $(TARGET_NAME)_libretro.dylib
    fpic := -fPIC
    SHARED := -dynamiclib
+
+ifeq ($(CROSS_COMPILE),1)
+	TARGET_RULE   = -target $(LIBRETRO_APPLE_PLATFORM) -isysroot $(LIBRETRO_APPLE_ISYSROOT)
+	CFLAGS     += $(TARGET_RULE)
+	CXXFLAGS   += $(TARGET_RULE)
+	LDFLAGS    += $(TARGET_RULE)
+	ARCHFLAGS   =
+endif
+
+ifeq ($(platform), osx)
+ifndef ($(NOUNIVERSAL))
+   CFLAGS += $(ARCHFLAGS)
+   CXXFLAGS += $(ARCHFLAGS)
+   LFLAGS += $(ARCHFLAGS)
+endif
+endif
+
 else ifneq (,$(findstring ios,$(platform)))
    TARGET := $(TARGET_NAME)_libretro_ios.dylib
   fpic := -fPIC
@@ -133,12 +148,24 @@ else
   CXX = c++ -arch armv7 -isysroot $(IOSSDK)
 endif
 ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
-CC     += -miphoneos-version-min=8.0
-CXXFLAGS += -miphoneos-version-min=8.0
+CC     += -miphoneos-version-min=9.0
+CXXFLAGS += -miphoneos-version-min=9.0
 else
-CC     += -miphoneos-version-min=5.0
-CXXFLAGS += -miphoneos-version-min=5.0
+CC     += -miphoneos-version-min=9.0
+CXXFLAGS += -miphoneos-version-min=9.0
 endif
+
+else ifeq ($(platform), tvos-arm64)
+   TARGET := $(TARGET_NAME)_libretro_tvos.dylib
+   fpic := -fPIC
+   SHARED := -dynamiclib
+   DEFINES := -DIOS -stdlib=libc++
+
+ifeq ($(IOSSDK),)
+   IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
+endif
+   CC  = cc -arch arm64  -isysroot $(IOSSDK)
+   CXX = c++ -arch arm64 -isysroot $(IOSSDK)
 else ifneq (,$(findstring qnx,$(platform)))
   TARGET := $(TARGET_NAME)_libretro_qnx.so
    fpic := -fPIC
@@ -150,9 +177,19 @@ else ifeq ($(platform), emscripten)
 else ifeq ($(platform), vita)
    TARGET := $(TARGET_NAME)_vita.a
    CC = arm-vita-eabi-gcc
+   CXX = arm-vita-eabi-g++
    AR = arm-vita-eabi-ar
    CXXFLAGS += -Wl,-q -Wall -O3
   STATIC_LINKING = 1
+# Nintendo Switch (libnx)
+else ifeq ($(platform), libnx)
+   include $(DEVKITPRO)/libnx/switch_rules
+   TARGET := $(TARGET_NAME)_libretro_$(platform).a
+   DEFINES := -DSWITCH=1 -D__SWITCH__ -D_LARGEFILE_SOURCE -DHAVE_LIBNX -D__aarch64__
+   CFLAGS := $(DEFINES) -fPIE -I$(LIBNX)/include/ -ffunction-sections -fdata-sections -ftls-model=local-exec 
+   CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math
+   CXXFLAGS := $(ASFLAGS) $(CFLAGS)
+   STATIC_LINKING = 1
 # Windows MSVC 2017 all architectures
 else ifneq (,$(findstring windows_msvc2017,$(platform)))
 
@@ -297,7 +334,7 @@ ifeq (,$(findstring windows_msvc2017,$(platform)))
 endif
 
 CFLAGS   += -D LIBRETRO $(fpic)
-CXXFLAGS += -D LIBRETRO $(fpic) -std=c++14
+CXXFLAGS += -D LIBRETRO $(fpic) -std=c++11
 
 ALTTARGET := $(subst mesen-s,mesens,$(TARGET))
 
