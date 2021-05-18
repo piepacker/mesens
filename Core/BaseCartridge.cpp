@@ -542,7 +542,7 @@ void BaseCartridge::InitCoprocessor()
 		_sgb = dynamic_cast<SuperGameboy*>(_coprocessor.get());
 		_needCoprocSync = true;
 	} else if (hle) {
-		printf("USE HLE DSP1\n");
+		MessageManager::Log("Try to use HLE coprocessor");
 		_coprocessor.reset(NecDspHle::InitCoprocessor(_coprocessorType, _console));
 	}
 }

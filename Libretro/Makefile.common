@@ -55,6 +55,7 @@ SOURCES_CXX := $(LIBRETRO_DIR)/libretro.cpp \
                $(CORE_DIR)/DisassemblyInfo.cpp \
                $(CORE_DIR)/DmaController.cpp \
                $(CORE_DIR)/dsp1emu.cpp \
+               $(CORE_DIR)/dsp2.cpp \
                $(CORE_DIR)/EmuSettings.cpp \
                $(CORE_DIR)/EventManager.cpp \
                $(CORE_DIR)/ExpressionEvaluator.cpp \

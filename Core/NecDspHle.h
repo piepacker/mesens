@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "BaseCoprocessor.h"
 #include "dsp1emu.hpp"
+#include "dsp2.hpp"
 
 class Console;
 class MemoryManager;
@@ -14,6 +15,7 @@ private:
 	Console* _console = nullptr;
 	MemoryManager* _memoryManager = nullptr;
 	Dsp1 _dsp1;
+	DSP2 _dsp2;
 	unique_ptr<RamHandler> _ramHandler;
 	CoprocessorType _type;
 

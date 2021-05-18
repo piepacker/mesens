@@ -61,10 +61,12 @@ NecDspHle* NecDspHle::InitCoprocessor(CoprocessorType type, Console *console)
 		// Probably need more work to support properly dsp1 vs dsp1b
 		case CoprocessorType::DSP1:
 		case CoprocessorType::DSP1B: supported = true; break;
+		case CoprocessorType::DSP2:  supported = true; break;
 		default: supported = false;
 	}
 
 	if(!supported) {
+		MessageManager::Log("HLE coprocessor isn't supported");
 		return nullptr;
 	}
 
@@ -73,9 +75,17 @@ NecDspHle* NecDspHle::InitCoprocessor(CoprocessorType type, Console *console)
 
 void NecDspHle::Reset()
 {
-	if (_type == CoprocessorType::DSP1 || _type == CoprocessorType::DSP1B) {
-		//printf("[DSP] Reset\n");
-		_dsp1.reset();
+	//printf("[DSP] Reset\n");
+	switch(_type) {
+		case CoprocessorType::DSP1:
+		case CoprocessorType::DSP1B:
+			_dsp1.reset();
+			break;
+		case CoprocessorType::DSP2:
+			_dsp2.power();
+			break;
+		default:
+			break;
 	}
 }
 
@@ -93,28 +103,42 @@ void NecDspHle::SaveBattery()
 
 uint8_t NecDspHle::Read(uint32_t addr)
 {
-	if (_type == CoprocessorType::DSP1 || _type == CoprocessorType::DSP1B) {
-		uint8_t r;
-		if(addr & _registerMask) {
-			r = _dsp1.getSr();
-		} else {
-			r = _dsp1.getDr();
-		}
-		//printf("[DSP] Read (%x) => %d\n", addr, r);
-		return r;
+	uint8_t r = 0;
+	switch(_type) {
+		case CoprocessorType::DSP1:
+		case CoprocessorType::DSP1B:
+			if(addr & _registerMask) {
+				r = _dsp1.getSr();
+			} else {
+				r = _dsp1.getDr();
+			}
+			break;
+		case CoprocessorType::DSP2:
+			r = _dsp2.read((addr & _registerMask) ? 1 : 0, 0);
+			break;
+		default:
+			break;
 	}
-	return 0;
+	//printf("[DSP] Read (%x) => %d\n", addr, r);
+	return r;
 }
 
 void NecDspHle::Write(uint32_t addr, uint8_t value)
 {
-	if (_type == CoprocessorType::DSP1 || _type == CoprocessorType::DSP1B) {
-		if(addr & _registerMask) {
-			return;
-		} else {
-			//printf("[DSP] Write (%x) <= %d\n", addr, value);
-			return _dsp1.setDr(value);
-		}
+	//printf("[DSP] Write (%x) <= %d\n", addr, value);
+	switch(_type) {
+		case CoprocessorType::DSP1:
+		case CoprocessorType::DSP1B:
+			if(addr & _registerMask) {
+				return;
+			} else {
+				return _dsp1.setDr(value);
+			}
+		case CoprocessorType::DSP2:
+			_dsp2.write((addr & _registerMask) ? 1 : 0, value);
+			break;
+		default:
+			break;
 	}
 }
 
@@ -136,8 +160,16 @@ AddressInfo NecDspHle::GetAbsoluteAddress(uint32_t address)
 
 void NecDspHle::Serialize(Serializer &s)
 {
-	if (_type == CoprocessorType::DSP1 || _type == CoprocessorType::DSP1B) {
-		_dsp1.Serialize(s);
+	switch(_type) {
+		case CoprocessorType::DSP1:
+		case CoprocessorType::DSP1B:
+			_dsp1.Serialize(s);
+			break;
+		case CoprocessorType::DSP2:
+			_dsp2.Serialize(s);
+			break;
+		default:
+			break;
 	}
 }
 
