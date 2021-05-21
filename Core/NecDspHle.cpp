@@ -48,6 +48,9 @@ NecDspHle::NecDspHle(CoprocessorType type, Console* console) : BaseCoprocessor(S
 			mm->RegisterHandler(0x80, 0x9F, 0x6000, 0x7FFF, this);
 		}
 	}
+
+	// Reset the coprocessor
+	Reset();
 }
 
 NecDspHle::~NecDspHle()
