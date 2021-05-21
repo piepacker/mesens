@@ -19,6 +19,7 @@ void Equalizer::ApplyEqualizer(uint32_t sampleCount, int16_t *samples)
 
 void Equalizer::UpdateEqualizers(vector<double> bandGains, uint32_t sampleRate)
 {
+#if 0
 	if(_prevSampleRate != sampleRate || memcmp(bandGains.data(), _prevEqualizerGains.data(), bandGains.size() * sizeof(double)) != 0) {
 		vector<double> bands = { 40, 56, 80, 113, 160, 225, 320, 450, 600, 750, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 10000, 12500, 13000 };
 		bands.insert(bands.begin(), bands[0] - (bands[1] - bands[0]));
@@ -42,4 +43,5 @@ void Equalizer::UpdateEqualizers(vector<double> bandGains, uint32_t sampleRate)
 		_prevSampleRate = sampleRate;
 		_prevEqualizerGains = bandGains;
 	}
+#endif
 }

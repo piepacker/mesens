@@ -407,7 +407,16 @@ void BaseCartridge::Init(MemoryMappings &mm)
 		_prgRomHandlers.push_back(unique_ptr<RomHandler>(new RomHandler(_prgRom, i, _prgRomSize, SnesMemoryType::PrgRom)));
 	}
 
+#if 1
+	uint32_t power = 0;
+	uint32_t tmp = _prgRomSize;
+	while (tmp > 0) {
+		power++;
+		tmp>>=1;
+	}
+#else
 	uint32_t power = (uint32_t)std::log2(_prgRomSize);
+#endif
 	if(_prgRomSize >(1u << power)) {
 		//If size isn't a power of 2, mirror the part above the nearest (lower) power of 2 until the size reaches the next power of 2.
 		uint32_t halfSize = 1 << power;
